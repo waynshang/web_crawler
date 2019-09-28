@@ -4,8 +4,7 @@ import re
 import mysql.connector
 from datetime import datetime
 from mysql_connect import  connect
-db = connect('Ptt_Web_Crawler')
-cursor=db.cursor()
+
 article_href = []
 url = "https://www.ptt.cc/bbs/MacShop/search?q=macbook+pro+13"
 # get response page from macshop
@@ -31,12 +30,18 @@ def request_parsing(url, tag, tag2 = None):
 	else:
 		# print(results)
 		return results
-def main(url):
 
+
+
+def main(url):
+	db = connect('Ptt_Web_Crawler')
+	cursor=db.cursor()
+	# ptt article start from <div class= title>
 	articles = request_parsing(url, "div.title")
 	# print(articles)
 	#get each article title
 	for item in articles:
+		# get each article's url
 		item_href = item.select_one("a").get("href")
 		# print(item_href)
 		if item_href:
@@ -50,7 +55,7 @@ def main(url):
 				# print('時間:', titles[3].text)
 				# print(contents)
 				for result in contents:
-					product_type, product_spec, product_location, product_price = None, None, None, None
+					product_type, product_spec, product_location, product_price, product_insurance = None, None, None, None, None
 					# print(str(result.next_sibling))
 					if str(result.next_sibling) and  (re.search("物品型號",str(result.next_sibling)) or re.search("交易價格",str(result.next_sibling))) :
 						content = str(result.next_sibling)
@@ -65,14 +70,32 @@ def main(url):
 
 							product_insurance =  content[content.index('[保固日期]')+1] if '[保固日期]' in content else None
 						except:
-							print(content)
-							print(item_href)
+							print("paring error", content)
+							print("https://www.ptt.cc", item_href)
 				# Insert Multiple Records
 				# print(product_price)
-				sqlStuff = "INSERT INTO MacBook_Pro (name, type, spec, location, price, post_at, url, insurance) VALUES (%s,%s, %s, %s, %s, %s , %s, %s)"
-				records = [(name, product_type, product_spec, product_location, product_price, post_at,  "https://www.ptt.cc" + item_href, product_insurance)]
-				cursor.executemany(sqlStuff, records)
-				db.commit()
+				find = "SELECT * from MacBook_Pro WHERE url = %s"
+				cursor.execute(find, ("https://www.ptt.cc" + item_href,))
+				find_result = cursor.fetchall()
+				# print(cursor.fetchall())
+				if not find_result:
+					try: 
+						sqlStuff = "INSERT INTO MacBook_Pro (name, type, spec, location, price, post_at, url, insurance) VALUES (%s,%s, %s, %s, %s, %s , %s, %s)"
+						# if use [(data)] need to use executemany else () use execute
+						records = [(name, product_type, product_spec, product_location, product_price, post_at,  "https://www.ptt.cc" + item_href, product_insurance)]
+						cursor.executemany(sqlStuff, records)
+						db.commit()
+						print(cursor.rowcount, "Record inserted successfully into MacBook_Pro table")
+					except mysql.connector.Error as error:
+						print("Failed to insert into MySQL table {}".format(error))
+				else:
+					print("https://www.ptt.cc" + item_href, "have been added before")
+
+	if (db.is_connected()):
+		cursor.close()
+		db.close()
+		print("MySQL connection is closed")
+
 
 
 
