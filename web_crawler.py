@@ -80,9 +80,9 @@ def main(url):
 				# print(cursor.fetchall())
 				if not find_result:
 					try: 
-						sqlStuff = "INSERT INTO MacBook_Pro (name, type, spec, location, price, post_at, url, insurance) VALUES (%s,%s, %s, %s, %s, %s , %s, %s)"
+						sqlStuff = "INSERT INTO MacBook_Pro (name, type, spec, location, price, post_at, url, insurance, created_at) VALUES (%s,%s, %s, %s, %s, %s , %s, %s, %s)"
 						# if use [(data)] need to use executemany else () use execute
-						records = [(name, product_type, product_spec, product_location, product_price, post_at,  "https://www.ptt.cc" + item_href, product_insurance)]
+						records = [(name, product_type, product_spec, product_location, product_price, post_at,  "https://www.ptt.cc" + item_href, product_insurance, datetime.now())]
 						cursor.executemany(sqlStuff, records)
 						db.commit()
 						print(cursor.rowcount, "Record inserted successfully into MacBook_Pro table")
