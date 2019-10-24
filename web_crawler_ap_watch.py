@@ -74,15 +74,15 @@ def main(url):
 							print("https://www.ptt.cc", item_href)
 				# Insert Multiple Records
 				# print(product_price)
-				find = "SELECT * from apple_watch WHERE url = %s"
+				find = "SELECT * from MacBook_Pro WHERE url = %s"
 				cursor.execute(find, ("https://www.ptt.cc" + item_href,))
 				find_result = cursor.fetchall()
 				# print(cursor.fetchall())
 				if not find_result:
 					try: 
-						sqlStuff = "INSERT INTO apple_watch (name, type, spec, location, price, post_at, url, insurance, created_at) VALUES (%s,%s, %s, %s, %s, %s , %s, %s, %s)"
+						sqlStuff = "INSERT INTO apple_watch (name, type, spec, location, price, post_at, url, insurance) VALUES (%s,%s, %s, %s, %s, %s , %s, %s)"
 						# if use [(data)] need to use executemany else () use execute
-						records = [(name, product_type, product_spec, product_location, product_price, post_at,  "https://www.ptt.cc" + item_href, product_insurance, datetime.now())]
+						records = [(name, product_type, product_spec, product_location, product_price, post_at,  "https://www.ptt.cc" + item_href, product_insurance)]
 						cursor.executemany(sqlStuff, records)
 						db.commit()
 						print(cursor.rowcount, "Record inserted successfully into Apple_Watch table")
