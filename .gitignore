@@ -1,3 +1,5 @@
 
 .vscode/settings.json
-__pycache__/mysql_connect.cpython-37.pyc
+*.pyc
+secret.py
+command_line_connect_mysql
